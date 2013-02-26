@@ -33,6 +33,113 @@ distribution.
 
 namespace bin
 {
+	//! Exec a lua file
+	int CScriptHandle::Exec(const char* pszFileName,  CScriptTable& ret)
+	{
+		if(IsNull() || !pszFileName)
+		{
+			return 0;
+		}
+
+		CHECK_LUA_STACK(m_pLua);
+
+		int nOldTop = lua_gettop(m_pLua);
+
+		int nRet = luaL_dofile(m_pLua, pszFileName);
+		if(nRet != LUA_OK)	// Error, the error message is on the top
+		{
+			LOG_MESSAGE("[ERROR] Exec File[%s] : %s", pszFileName, lua_tostring(m_pLua, -1));
+
+			return 0;
+		}
+		else
+		{
+			int nCnt = lua_gettop(m_pLua)-nOldTop;
+			if(nCnt != 0)
+			{
+				CHECK_LUA_STACK(m_pLua);
+
+				if(!ret.IsReferd())
+				{
+					NewTable(ret);
+				}
+
+				assert(ret.GetHandle() == GetHandle());
+
+				ret.PrepareStack();
+
+				// Set n
+				lua_pushinteger(m_pLua, nCnt);
+				lua_setfield(m_pLua, -2, "n");
+
+				for(int i=1; i<=nCnt; ++i)
+				{
+					lua_pushvalue(m_pLua, nOldTop+i);
+					lua_rawseti(m_pLua, -2, i);
+				}
+			}
+			else if(ret.IsReferd())
+			{
+				ret.Set("n", nCnt);
+			}
+		}
+
+		return 1;
+	}
+	//! Exec a lua string, ret contains the return value from string
+	int CScriptHandle::ExecString(const char* pszString, CScriptTable& ret)
+	{
+		if(IsNull() || !pszString)
+		{
+			return 0;
+		}
+
+		CHECK_LUA_STACK(m_pLua);
+
+		int nOldTop = lua_gettop(m_pLua);
+
+		int nRet = luaL_dostring(m_pLua, pszString);
+		if(nRet != LUA_OK)	// Error, the error message is on the top
+		{
+			LOG_MESSAGE("[ERROR] Exec String : %s", lua_tostring(m_pLua, -1));
+
+			return 0;
+		}
+		else
+		{
+			int nCnt = lua_gettop(m_pLua)-nOldTop;
+			if(nCnt != 0)
+			{
+				CHECK_LUA_STACK(m_pLua);
+
+				if(!ret.IsReferd())
+				{
+					NewTable(ret);
+				}
+
+				assert(ret.GetHandle() == GetHandle());
+
+				ret.PrepareStack();
+
+				// Set n
+				lua_pushinteger(m_pLua, nCnt);
+				lua_setfield(m_pLua, -2, "n");
+
+				for(int i=1; i<=nCnt; ++i)
+				{
+					lua_pushvalue(m_pLua, nOldTop+i);
+					lua_rawseti(m_pLua, -2, i);
+				}
+			}
+			else if(ret.IsReferd())
+			{
+				ret.Set("n", nCnt);
+			}
+		}
+
+		return 1;
+	}
+
 	int CScriptHandle::Get(const char* pszName, CScriptTable& tbl)
 	{
 		tbl.UnRef();

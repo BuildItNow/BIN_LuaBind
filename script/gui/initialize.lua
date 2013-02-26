@@ -1,7 +1,13 @@
+
+exporterManager.exportModule("gui")
+exporterManager.exportClassTo("guiDialog", "gui")
+
+local dir = "./script/gui/"
+
 local type2creator = 
 {
-	type0 = "gui/type0Creator.lua",
-	type1 = "gui/type0Creator.lua"
+	type0 = "type0Creator.lua",
+	type1 = "type0Creator.lua"
 }
 
 function gui.loadCreator(creatorFile)
@@ -17,7 +23,7 @@ function gui.requireCreator (dialogType)
 	local creatorFile = type2creator[dialogType]
 	
 	if creatorFile ~= nil then
-		gui.loadCreator(creatorFile)
+		gui.loadCreator(dir..creatorFile)
 	end
 	
 	creator = gui[dialogType]
@@ -25,4 +31,4 @@ function gui.requireCreator (dialogType)
 	return creator
 end
 
-print("end gui/initialize")
+logger.info("Gui done")

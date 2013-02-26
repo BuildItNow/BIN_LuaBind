@@ -128,7 +128,7 @@ namespace bin
 			lua_setmetatable(pL, -2);
 
 			// Add the object to objects table, objects table is on the stack
-			CheckObjectsTable(pL);
+			CheckObjectsTable(pL, pObj->GetScriptObject().IsWeaked());
 			lua_pushvalue(pL, -2);	// Set object to top
 			pProxy->objRef.nRef = luaL_ref(pL, -2);
 			lua_pop(pL, 1);			// pop the objects table
@@ -189,9 +189,10 @@ namespace bin
 		//}
 
 		// Internal used
-		int CheckObjectsTable(lua_State* pL)
+		int CheckObjectsTable(lua_State* pL, bool bWeaked)
 		{
-			lua_getfield(pL, LUA_REGISTRYINDEX, SCRIPT_OBJECTS);
+			const char* pszName = bWeaked ? SCRIPT_OWN_OBJECTS : SCRIPT_USE_OBJECTS;
+			lua_getfield(pL, LUA_REGISTRYINDEX, pszName);
 			if(lua_isnil(pL, -1))
 			{
 				lua_pop(pL, 1);		// Pop the nil value
@@ -199,6 +200,7 @@ namespace bin
 				lua_newtable(pL);
 				
 				//Set objects table as value weak table
+				if(bWeaked)
 				{
 					lua_newtable(pL);
 					lua_pushstring(pL, "v");
@@ -207,7 +209,7 @@ namespace bin
 				}
 
 				lua_pushvalue(pL, -1);
-				lua_setfield(pL, LUA_REGISTRYINDEX, SCRIPT_OBJECTS);
+				lua_setfield(pL, LUA_REGISTRYINDEX, pszName);
 			}
 
 			return 1;
@@ -548,7 +550,7 @@ namespace bin
 				return 0;
 			}
 
-			if(pProxy->objRef.pObject->m_bDelByScr)
+			if(pProxy->objRef.pObject->GetDelByScr())
 			{
 				pProxy->objRef.pObject->ReleaseByScr();	// Will call objRef.Unlink();
 

@@ -37,12 +37,16 @@ namespace bin
 
     void SScriptObjectRef::Unlink()
     {
-        if(pObject)
+		SScriptObject* pObj = pObject;
+		
+		// Need pObj, So Unlink self first
+		SideUnlink();
+        
+		// Then obj
+		if(pObj)
         {
-            pObject->SideUnlink();
+            pObj->SideUnlink();
         }
-
-        SideUnlink();
     }
 
 	void SScriptObjectRef::SideUnlink()
@@ -52,13 +56,39 @@ namespace bin
 		{
 			CHECK_LUA_STACK(pLua);
 
-			ScriptExporterManager().CheckObjectsTable(pLua);
-			luaL_unref(pLua, -1, nRef);
+			ScriptExporterManager().CheckObjectsTable(pLua, pObject->IsWeaked());
+
+			// Avoid re-entrance by CheckObjectsTable
+			if(pLua && nRef!=LUA_NOREF)
+			{
+				luaL_unref(pLua, -1, nRef);
+			}
 		}
 
 		pObject = NULL;
 		pLua    = NULL;
 		nRef    = LUA_NOREF;
+	}
+
+	void SScriptObjectRef::OnChangeWeakedTo(bool bWeaked)
+	{
+		if(pObject && pObject->IsWeaked() != bWeaked)	// Weak property is changed
+		{
+			assert(pLua && nRef!=LUA_NOREF);
+
+			CHECK_LUA_STACK(pLua);
+
+			ScriptExporterManager().CheckObjectsTable(pLua, pObject->IsWeaked());	// oldTbl
+			lua_rawgeti(pLua, -1, nRef);									// oldTbl, obj
+
+			ScriptExporterManager().CheckObjectsTable(pLua, bWeaked);		// oldTbl, obj, newTbl
+			lua_pushvalue(pLua, -2);										// oldTbl, obj, newTbl, obj
+
+			int nNewRef = luaL_ref(pLua, -2);	// oldTbl, obj, newTbl
+			luaL_unref(pLua, -3, nRef);
+
+			nRef = nNewRef;
+		}
 	}
 
 	// Push userdata on top in pL's stack, nil if not exported
@@ -71,7 +101,10 @@ namespace bin
 			return 1;
 		}
 
-		ScriptExporterManager().CheckObjectsTable(pL);
+		// Stop gc, because CheckObjectsTable may call gc
+		//GUARD_LUA_GC(pL);
+
+		ScriptExporterManager().CheckObjectsTable(pL, IsWeaked());
 		lua_rawgeti(pL, -1, m_pObjRef->nRef);
 		lua_replace(pL, -2);
 		return 1;
@@ -89,7 +122,10 @@ namespace bin
 		lua_State* pLua = m_pObjRef->pLua;
 		CHECK_LUA_STACK(pLua);
 
-		ScriptExporterManager().CheckObjectsTable(pLua);
+		// Stop gc, because CheckObjectsTable may call gc
+		//GUARD_LUA_GC(pLua);
+
+		ScriptExporterManager().CheckObjectsTable(pLua, IsWeaked());
 		lua_rawgeti(pLua, -1, m_pObjRef->nRef);
 
 		const char* TEMP_REF = "__bin_temp";

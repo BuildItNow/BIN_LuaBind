@@ -28,9 +28,12 @@ distribution.
 
 namespace bin
 {
-	static const char* SCRIPT_OBJECTS	= "__bin_objects";
+	static const char* SCRIPT_OWN_OBJECTS	= "__bin_own_objects";
+	static const char* SCRIPT_USE_OBJECTS   = "__bin_use_objects";
 	static const char* SCRIPT_REFS		= "__bin_refs";
 	static const char* SCRIPT_TYPES		= "__bin_types";
+
+	extern void LOG_MESSAGE(const char* pszFmt, ...);
 
 	class INonCopyable 
 	{
@@ -60,11 +63,37 @@ namespace bin
 			if(pLua)
 			{
 				lua_settop(pLua, nTop);
+				pLua = NULL;
+				nTop = -1;
 			}
 		}
 	};
 
 #define CHECK_LUA_STACK(l)	SCheckLuaStack __checkStack(l)
+
+	struct SGuardLuaGC
+	{
+		lua_State*		pLua;
+		SGuardLuaGC(lua_State* pL)
+			: pLua(pL)
+		{
+			if(pLua)
+			{
+				lua_gc(pLua, LUA_GCSTOP, 0);
+			}
+		}
+
+		~SGuardLuaGC()
+		{
+			if(pLua)
+			{
+				lua_gc(pLua, LUA_GCRESTART, 0);
+
+				pLua = NULL;
+			}
+		}
+	};
+#define GUARD_LUA_GC(l)	SGuardLuaGC __guardGC(l)
 
 	struct SVoidType
 	{

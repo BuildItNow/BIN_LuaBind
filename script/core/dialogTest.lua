@@ -1,4 +1,6 @@
 
+logger.debug("Now do dialog test code")
+
 local creator = gui.requireCreator("type0")
 
 print(creator)

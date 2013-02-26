@@ -243,6 +243,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ScriptBase.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ScriptExporter.h"
 				>
 			</File>

@@ -256,12 +256,16 @@ OPERATION_FAIL:
 			int nRet = luaL_dofile(m_pLua, pszFileName);
 			if(nRet != LUA_OK)	// Error, the error message is on the top
 			{
-				std::cout<< lua_tostring(m_pLua, -1);
+				LOG_MESSAGE("[ERROR] Exec File[%s] : %s", pszFileName, lua_tostring(m_pLua, -1));
+
 				return 0;
 			}
 
 			return 1;
 		}
+
+		//! Exec a lua file
+		int Exec(const char* pszFileName,  CScriptTable& ret);
 
 		//! Exec a lua string
 		int ExecString(const char* pszString)
@@ -276,11 +280,16 @@ OPERATION_FAIL:
 			int nRet = luaL_dostring(m_pLua, pszString);
 			if(nRet != LUA_OK)	// Error, the error message is on the top
 			{
+				LOG_MESSAGE("[ERROR] Exec String : %s", lua_tostring(m_pLua, -1));
+
 				return 0;
 			}
 
 			return 1;
 		}
+
+		//! Exec a lua string, ret contains the return value from string
+		int ExecString(const char* pszString, CScriptTable& ret);
 
 		//! Check if this handle is Null.
 		bool IsNull() const
@@ -405,6 +414,7 @@ OPERATION_FAIL:
 
 			if(lua_pcall(m_pLua, 0, 1, NULL) != LUA_OK)	// Error msg here
 			{
+				LOG_MESSAGE("[ERROR] Call Func[%s] : %s", pszName, lua_tostring(m_pLua, -1));
 
 				return 0;
 			}
@@ -427,6 +437,7 @@ OPERATION_FAIL:
 
 			if(lua_pcall(m_pLua, 1, 1, NULL) != LUA_OK)	// Error msg here
 			{
+				LOG_MESSAGE("[ERROR] Call Func[%s] : %s", pszName, lua_tostring(m_pLua, -1));
 
 				return 0;
 			}
@@ -446,6 +457,7 @@ OPERATION_FAIL:
 
 			if(lua_pcall(m_pLua, 2, 1, NULL) != LUA_OK)	// Error msg here
 			{
+				LOG_MESSAGE("[ERROR] Call Func[%s] : %s", pszName, lua_tostring(m_pLua, -1));
 
 				return 0;
 			}
@@ -737,6 +749,8 @@ OPERATION_FAIL:
 
 			if(lua_pcall(pLua, 1, 1, NULL) != LUA_OK)	// Error msg here
 			{
+				LOG_MESSAGE("[ERROR] Call MemFunc[%s] : %s", pszName, lua_tostring(pLua, -1));
+
 				return 0;
 			}
 
@@ -756,6 +770,8 @@ OPERATION_FAIL:
 
 			if(lua_pcall(pLua, 2, 1, NULL) != LUA_OK)	// Error msg here
 			{
+				LOG_MESSAGE("[ERROR] Call Func[%s] : %s", pszName, lua_tostring(pLua, -1));
+
 				return 0;
 			}
 
@@ -776,6 +792,8 @@ OPERATION_FAIL:
 
 			if(lua_pcall(pLua, 3, 1, NULL) != LUA_OK)	// Error msg here
 			{
+				LOG_MESSAGE("[ERROR] Call MemFunc[%s] : %s", pszName, lua_tostring(pLua, -1));
+
 				return 0;
 			}
 
@@ -791,6 +809,11 @@ OPERATION_FAIL:
 #undef MAKE_RET
 #undef MEM_FUNC_POSWORK
 	protected:
+		lua_State* GetHandle() const
+		{
+			return m_ref.pLua;
+		}
+
 		int PrepareStack();
 
 		template <typename T>
@@ -873,6 +896,7 @@ OPERATION_FAIL:
 
 			if(lua_pcall(pLua, 0, 1, NULL) != LUA_OK)	// Error msg here
 			{
+				LOG_MESSAGE("[ERROR] Call Func[%s] : %s", pszName, lua_tostring(pLua, -1));
 
 				return 0;
 			}
@@ -891,6 +915,7 @@ OPERATION_FAIL:
 
 			if(lua_pcall(pLua, 1, 1, NULL) != LUA_OK)	// Error msg here
 			{
+				LOG_MESSAGE("[ERROR] Call Func[%s] : %s", pszName, lua_tostring(pLua, -1));
 
 				return 0;
 			}
@@ -909,6 +934,8 @@ OPERATION_FAIL:
 
 			if(lua_pcall(pLua, 2, 1, NULL) != LUA_OK)	// Error msg here
 			{
+				LOG_MESSAGE("[ERROR] Call Func[%s] : %s", pszName, lua_tostring(pLua, -1));
+
 				return 0;
 			}
 

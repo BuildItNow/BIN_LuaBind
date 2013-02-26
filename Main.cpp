@@ -24,12 +24,7 @@ distribution.
 #if defined TEST_EXE
 
 //
-// Include Public.hpp but not Public.h
-#include "Public.hpp"   
-
-//
-
-//
+#include "Public.hpp"
 
 #if defined _DEBUG
 #pragma comment(lib, "lua_d.lib")
@@ -207,6 +202,40 @@ BEGIN_TEST_CASE(TestScriptHandle)
 		ASSERT0(!tbl1.IsReferd());
 		ASSERT0(!funcTbl.IsReferd());
 	}
+
+	// Check string return value
+	{
+		const char* pszLua = 
+			"return 1, \"Hello\", {a=1, b=\"Hello\"}";
+
+		CScriptTable ret;
+		ASSERT0(scriptHandle.ExecString(pszLua, ret));
+		ASSERT0(ret.IsReferd());
+
+		int nN = 0;
+		ret.Get("n", nN);
+		ASSERT0(nN == 3);
+
+		int nR1 = 0;
+		ret.Get(1, nR1);
+		ASSERT0(nR1 == 1);
+
+		std::string strR2;
+		ret.Get(2, strR2);
+		ASSERT0(strR2 == "Hello");
+
+		CScriptTable R3;
+		ret.Get(3, R3);
+		ASSERT0(R3.IsReferd());
+
+		int r3_a = 0;
+		R3.Get("a", r3_a);
+		ASSERT0(r3_a == 1);
+
+		std::string r3_b;
+		R3.Get("b", r3_b);
+		ASSERT0(r3_b == "Hello");
+	}
 END_TEST_CASE()
 
 namespace bin
@@ -381,8 +410,10 @@ BEGIN_TEST_CASE(TestExportClass)
 
 		// Check weak table mechanism
 		{
+			// Script own(Del by script) objects will be collected, but Script use(Not del by script) objects will not be collected
 			const int OBJ_NUM = 10;
 			CClassTest*	objs[OBJ_NUM] = {NULL};
+			CScriptUserData objUds[OBJ_NUM];
 
 			CScriptUserData rdUd;
 			int				nRdIdx = rand()%OBJ_NUM;
@@ -395,6 +426,8 @@ BEGIN_TEST_CASE(TestExportClass)
 
 				sprintf(szName, "obj%d", i);
 				ASSERT0(scriptHandle.Set(szName, objs[i]));
+
+				objs[i]->GetScriptObject().SetDelByScr(true);
 			}
 
 			for(int i=0; i<10; ++i)
@@ -402,8 +435,7 @@ BEGIN_TEST_CASE(TestExportClass)
 				ASSERT0(objs[i]->IsExported());
 			}
 
-			objs[nRdIdx]->GetScriptUserData(rdUd);
-			ASSERT0(rdUd.IsReferd());
+			objs[nRdIdx]->GetScriptObject().SetDelByScr(false);
 
 			for(int i=0; i<10; ++i)
 			{
@@ -413,22 +445,22 @@ BEGIN_TEST_CASE(TestExportClass)
 				ASSERT0(scriptHandle.ExecString(szScr));
 			}
 
+			
 			// All the object will be collected
 			ASSERT0(scriptHandle.ExecString("collectgarbage()"));
-			
+						
 			for(int i=0; i<10; ++i)
 			{
 				if(i == nRdIdx)
 				{
 					ASSERT0(objs[i]->IsExported());
-					ASSERT0(rdUd.IsReferd());
 				}
-				else
+				else	// All the objects have been deleted
 				{
-					ASSERT0(!objs[i]->IsExported());
+					//ASSERT0(!objs[i]->IsExported());
 
-					delete objs[i];
-					objs[i] = NULL;
+					//delete objs[i];
+					//objs[i] = NULL;
 				}
 			}
 
@@ -436,10 +468,10 @@ BEGIN_TEST_CASE(TestExportClass)
 			// Collect the random userdata
 			ASSERT0(scriptHandle.ExecString("collectgarbage()"));
 			
-			ASSERT0(!objs[nRdIdx]->IsExported());
+			//ASSERT0(!objs[nRdIdx]->IsExported());
 			ASSERT0(!rdUd.IsReferd());
-			delete objs[nRdIdx];
-			objs[nRdIdx] = NULL;
+			//delete objs[nRdIdx];
+			//objs[nRdIdx] = NULL;
 		}
 
 		// Check c++ object's userdata will be invalid autumatically
@@ -580,6 +612,19 @@ namespace bin
 		CSuper()
 		{
 			m_strSupMsg = "CSuper";
+		}
+
+		CSuper(const CSuper& r)
+			: m_strSupMsg(r.m_strSupMsg)
+		{
+
+		}
+
+		CSuper& operator=(const CSuper& r)
+		{
+			m_strSupMsg = r.m_strSupMsg;
+
+			return *this;
 		}
 
 		virtual ~CSuper()
@@ -778,6 +823,40 @@ BEGIN_TEST_CASE(TestInheritance)
 		ASSERT0(scriptHandle.ExecString("obj1:subFunc()"));
 	}
 
+	// Test Copy constructor and Opertor = 
+	{
+		CSuper src;
+		src.m_strSupMsg = "src";
+
+		CSuper dst;
+		dst.m_strSupMsg = "dst";
+
+		ASSERT0(scriptHandle.Set("dstObj", &dst));
+
+		CScriptTable ret;
+		scriptHandle.ExecString("return dstObj:getMsg()", ret);
+		std::string msg;
+		ret.Get(1, msg);
+		ASSERT0(msg == "dst");
+
+		dst = src;
+
+		ret.UnRef();
+		scriptHandle.ExecString("return dstObj:getMsg()", ret);
+		ret.Get(1, msg);
+		ASSERT0(msg == "src");
+
+		dst.m_strSupMsg = "dst";
+		CSuper cpy(dst);
+
+		ASSERT0(scriptHandle.Set("cpyObj", &cpy));
+
+		ret.UnRef();
+		scriptHandle.ExecString("return cpyObj:getMsg()", ret);
+		ret.Get(1, msg);
+		ASSERT0(msg == "dst");
+	}
+
 END_TEST_CASE()
 
 namespace bin
@@ -880,6 +959,15 @@ namespace bin
 			return 1;
 		}
 	END_SCRIPT_MODULE()
+
+	BEGIN_SCRIPT_MODULE(logger)
+		DEFINE_MODULE_FUNCTION(__bin_log, void, (const char* pszMsg))
+		{
+			LOG_MESSAGE(pszMsg);
+
+			return 1;
+		}
+	END_SCRIPT_MODULE()
 }
 
 BEGIN_TEST_CASE(TestApplication)
@@ -887,12 +975,59 @@ BEGIN_TEST_CASE(TestApplication)
 
 	CScriptHandle scriptHandle;
 	ASSERT0(scriptHandle.Init());
-	
-	ASSERT0(ScriptExporterManager().ExportModule("gui", scriptHandle));
-	ASSERT0(ScriptExporterManager().ExportClass("guiDialog", scriptHandle, "gui"));
 
-	ASSERT0(scriptHandle.Exec("gui/initialize.lua"));
-	ASSERT0(scriptHandle.Exec("core/dialogTest.lua"));
+	ASSERT0(ScriptExporterManager().ExportModule("exporterManager", scriptHandle));
+
+	ASSERT0(scriptHandle.Exec("script/initialize.lua"));
+
+END_TEST_CASE()
+
+namespace bin
+{
+	class CGCTest
+	{
+		DECLARE_SCRIPT_CLASS()
+	public:
+		CGCTest()
+		{
+
+		}
+
+		~CGCTest()
+		{
+
+		}
+
+		void TestScriptHandle()
+		{
+			std::string msg;
+			GetScriptHandle().Get("msg", msg);
+		}
+	};
+
+	BEGIN_SCRIPT_CLASS(gcTest, CGCTest)
+
+	END_SCRIPT_CLASS()
+};
+
+BEGIN_TEST_CASE(TestGC)
+	using namespace bin;
+
+	CScriptHandle scriptHandle;
+	ASSERT0(scriptHandle.Init());
+
+	ASSERT0(ScriptExporterManager().ExportClass("gcTest", scriptHandle));
+
+
+	CGCTest obj;
+	{
+		scriptHandle.Set("obj", &obj);
+		scriptHandle.Set("obj", 1);
+		// Now obj can be gc
+
+		obj.TestScriptHandle();
+	}
+
 END_TEST_CASE()
 
 int main(int argc, char** argv)
@@ -903,8 +1038,7 @@ int main(int argc, char** argv)
 	TestSetScriptValue();
 	TestInheritance();
 	TestApplication();
-
-    std::cout<< "All the test case done"<< std::endl;
+	TestGC();
 
 	return 0;
 }

@@ -26,8 +26,7 @@ distribution.
 
 namespace bin
 {
-	// TODO : SScriptObjectRef and SScriptObject's Copy constructor and Operator need re-consider 
-	struct SScriptObjectRef
+	struct SScriptObjectRef : INonCopyable
 	{
 		struct SScriptObject*	pObject;
 		lua_State*				pLua;
@@ -48,31 +47,11 @@ namespace bin
 
 		// Unlink the connection between c++ object and lua object
 		void Unlink();
-		//{
-		//	if(pObject)
-		//	{
-		//		pObject->SideUnlink();
-		//	}
-
-		//	SideUnlink();
-		//}
 
 		// Unlink the lua object reference to c++ object, NB. The c++ object still reference to lua object
 		void SideUnlink();
-		//{
-		//	// Remove the object from objects table
-		//	if(pLua && nRef!=LUA_NOREF)
-		//	{
-		//		CHECK_LUA_STACK(pLua);
 
-		//		ScriptExporterManager().CheckObjectsTable(pLua);
-		//		luaL_unref(pLua, -1, nRef);
-		//	}
-
-		//	pObject = NULL;
-		//	pLua    = NULL;
-		//	nRef    = nRef;
-		//}
+		void OnChangeWeakedTo(bool bWeaked);
 	};
 
 	struct SScriptObject
@@ -90,6 +69,22 @@ namespace bin
 		~SScriptObject()
 		{
 			Unlink();
+		}
+
+		// Copy constructor and assign operator should do nothing 
+		SScriptObject(const SScriptObject& r)
+			: m_pObjRef(NULL)
+			, m_pThis(NULL)
+			, m_pExporter(NULL)
+			, m_bDelByScr(false)		// Should use the r.m_bDelByScr ? 
+			, m_pReleaser(NULL)
+		{
+			
+		}
+
+		SScriptObject& operator = (const SScriptObject& r)
+		{
+			// Copy nothing about script part
 		}
 
 		// Internal used, Attach this object to lua object
@@ -116,6 +111,7 @@ namespace bin
 			m_pObjRef   = NULL;
 			m_pThis     = NULL;
 			m_pExporter = NULL;
+			m_bDelByScr = false;
 		}
 
 		// Internal used, Unlink the connection between c++ object and lua object
@@ -132,7 +128,7 @@ namespace bin
 		// Internal used, Release api for lua proxy, NB. this object will be deleted after calling this method
 		void ReleaseByScr()
 		{
-			if(m_bDelByScr)
+			if(GetDelByScr())
 			{
 				(this->*m_pReleaser)();
 			}
@@ -161,6 +157,11 @@ namespace bin
 		//! Set if the lua deletes this object(Means lua manages the life of this object).
 		void SetDelByScr(bool bDelByScr)
 		{
+			if(IsExported())
+			{
+				m_pObjRef->OnChangeWeakedTo(bDelByScr);
+			}
+
 			m_bDelByScr = bDelByScr;
 		}
 
@@ -170,11 +171,15 @@ namespace bin
 			return m_bDelByScr;
 		}
 
+		bool IsWeaked() const
+		{
+			return GetDelByScr();
+		}
+
 	public:
 		// Internal used, don't touch these things
 		void*                   m_pThis;
 		class CClassExporter*   m_pExporter;
-		bool                    m_bDelByScr;
 
 	protected:
 		template <typename T>
@@ -189,6 +194,7 @@ namespace bin
 		// Release script handle and script userdata
 		void ReleaseScript();
 	protected:
+		bool                    m_bDelByScr;
 		SScriptObjectRef*	    m_pObjRef;
 		typedef void (SScriptObject::* Releaser)();
 		Releaser                m_pReleaser;
