@@ -706,7 +706,6 @@ namespace bin
 			}
 
 			r = obj->m_strSupMsg;
-			std::cout<< "super::getMsg\n";
 
 			return 1;
 		}
@@ -717,6 +716,8 @@ namespace bin
 			{
 				return 0;
 			}
+
+            r = 1;
 
 			std::cout<< "super::superFunc\n";
 
@@ -746,6 +747,8 @@ namespace bin
 				return 0;
 			}
 
+            r = 2;
+
 			std::cout<< "sub::subFunc\n";
 
 			return 1;
@@ -774,12 +777,48 @@ namespace bin
 				return 0;
 			}
 
-			r = 0;
+			r = 100;
+
 			std::cout<< "subsub::subsubFunc\n";
 
 			return 1;
 		}
 	END_SCRIPT_CLASS()
+
+    BEGIN_SCRIPT_MODULE(core)
+        DEFINE_MODULE_FUNCTION(newSuper, CSuper*, ())
+        {
+            CSuper* pObj = new CSuper;
+
+            pObj->GetScriptObject().SetDelByScr(true);
+
+            r = pObj;
+
+            return 1;
+        }
+
+        DEFINE_MODULE_FUNCTION(newSub, CSub*, ())
+        {
+            CSub* pObj = new CSub;
+
+            pObj->GetScriptObject().SetDelByScr(true);
+
+            r = pObj;
+
+            return 1;
+        }
+
+        DEFINE_MODULE_FUNCTION(newSubSub, CSubSub*, ())
+        {
+            CSubSub* pObj = new CSubSub;
+
+            pObj->GetScriptObject().SetDelByScr(true);
+
+            r = pObj;
+
+            return 1;
+        }
+    END_SCRIPT_MODULE()
 };
 
 BEGIN_TEST_CASE(TestInheritance)
@@ -856,6 +895,61 @@ BEGIN_TEST_CASE(TestInheritance)
 		ret.Get(1, msg);
 		ASSERT0(msg == "dst");
 	}
+
+    // Test Script Inheritance
+    {
+        ASSERT0(ScriptExporterManager().ExportModule("core", scriptHandle));
+        ASSERT0(scriptHandle.Exec("script/scriptInheritance.lua"));
+
+        {
+            ASSERT0(scriptHandle.ExecString("obj = core.newScriptSub()"));
+            CScriptUserData obj;
+            ASSERT0(scriptHandle.Get("obj", obj));
+
+            std::string strMsg;
+            ASSERT0(obj.CallMemFunc<std::string>("getScriptMessage", strMsg));
+            ASSERT0(strMsg == "type_scriptSub");
+
+            ASSERT0(obj.CallMemFunc<std::string>("getMsg", strMsg));
+            ASSERT0(strMsg == "CSuper");         
+        }
+
+        {
+            ASSERT0(scriptHandle.ExecString("obj = core.newScriptSubSub()"));
+
+            CScriptUserData obj;
+            ASSERT0(scriptHandle.Get("obj", obj));
+
+            std::string strMsg;
+            ASSERT0(obj.CallMemFunc<std::string>("getScriptSubMessage", strMsg));
+            ASSERT0(strMsg == "type_scriptSub");
+
+            ASSERT0(obj.CallMemFunc<std::string>("getScriptMessage", strMsg));
+            ASSERT0(strMsg == "type_scriptSubSub");
+
+            ASSERT0(obj.CallMemFunc<std::string>("getMsg", strMsg));
+            ASSERT0(strMsg == "CSuper");
+        }
+
+        {
+            ASSERT0(scriptHandle.ExecString("obj = core.newScriptSubSub_subsub()"));
+
+            CScriptUserData obj;
+            ASSERT0(scriptHandle.Get("obj", obj));
+
+            std::string strMsg;
+
+            ASSERT0(obj.CallMemFunc<std::string>("getMsg", strMsg));
+            ASSERT0(strMsg == "type_scriptSubSub_subsub");
+
+            int nRet = 0;
+            ASSERT0(obj.CallMemFunc<int>("subsubFunc", nRet));
+            ASSERT0(nRet == 100);
+
+            ASSERT0(obj.CallMemFunc<int>("subFunc", nRet));
+            ASSERT0(nRet == 2);
+        }
+    }
 
 END_TEST_CASE()
 

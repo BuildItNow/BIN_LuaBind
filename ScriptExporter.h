@@ -110,6 +110,11 @@ namespace bin
 			lua_pushstring(pL, "object");
 			lua_setfield(pL, -2, "type");
 
+            {
+                lua_pushvalue(pL, -1);
+                lua_setfield(pL, -2, "__bin_objtable");    // Setup object table, so we can set a new type on this object
+            }
+
 			// Set metatable to the new table, this metatable provides "class member functions"
 			{
 				SExporterInfo exporterInfo = pObj->GetExporter()->GetInfo();
@@ -431,7 +436,7 @@ namespace bin
 		{
 			CHECK_LUA_STACK(pL);
 
-			if(luaL_newmetatable(pL, GetClassName()) != 0)	// Has been exported ?
+			if(luaL_newmetatable(pL, GetClassName()) != 0)	// Has not been exported ?
 			{
 				lua_pushstring(pL, GetClassName());
 				lua_setfield(pL, -2, "name");
@@ -448,12 +453,15 @@ namespace bin
 				lua_pushcfunction(pL, &__Imported);
 				lua_setfield(pL, -2, "imported");
 
-				if(m_pszSuperName)
+				if(m_pszSuperName)  // Export the super class
 				{
 					ScriptExporterManager().ExportClass(m_pszClassName, pL, pszNameSpace);
 
-					luaL_getmetatable(pL, m_pszSuperName);
-					lua_setmetatable(pL, -2);
+					luaL_getmetatable(pL, m_pszSuperName);  // newClass, superClass
+                    lua_pushvalue(pL, -1);                  // newClass, superClass, superClass
+
+                    lua_setfield(pL, -3, "super");          // newClass, superClass
+                    lua_setmetatable(pL, -2);
 				}
 
 				const ClassFunctionLinkNode* pNode = GetClassFunctionList();	

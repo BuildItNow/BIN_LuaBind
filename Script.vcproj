@@ -164,8 +164,11 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="0"
 				PreprocessorDefinitions="WIN32;_DEBUG;TEST_EXE"
 				RuntimeLibrary="1"
+				WarningLevel="3"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -180,6 +183,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)\script_d.exe"
 				AdditionalLibraryDirectories="../Lib"
+				GenerateDebugInformation="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
