@@ -1,6 +1,6 @@
 
 exporterManager.exportModule("gui")
-exporterManager.exportClassTo("guiDialog", "gui")
+exporterManager.exportClass("guiDialog", "gui")
 
 local dir = "./script/gui/"
 
@@ -30,5 +30,13 @@ function gui.requireCreator (dialogType)
 	
 	return creator
 end
+
+local guiTbl = {}
+assert(exporterManager.exportModule("gui", guiTbl))
+assert(guiTbl.moduleToTable)
+guiTbl.moduleToTable()
+
+local retTbl = guiTbl.returnTable()
+assert(retTbl and retTbl.msg == "returnTable")
 
 logger.info("Gui done")

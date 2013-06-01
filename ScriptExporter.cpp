@@ -96,24 +96,52 @@ namespace bin
 		return 0;
 	}
 
+	int CScriptExporterManager::ExportModuleTo(const char* pszName, lua_State* pL, CScriptTable& scriptTable)
+	{
+		assert(scriptTable.GetHandle() == pL);
+
+		ExporterIterator pos = m_scriptExporters.find(pszName);
+
+		if(pos != m_scriptExporters.end())
+		{
+			SExporterInfo info = pos->second->GetInfo();
+			if(info.eET != SExporterInfo::EET_MODULE)
+			{
+				return 0;
+			}
+
+			CModuleExporter& exporter = (CModuleExporter&)*(pos->second);
+			return exporter.ExportTo(pL, scriptTable);
+		}
+
+		return 0;
+	}
+
 	BEGIN_SCRIPT_MODULE(exporterManager)
-		DEFINE_MODULE_FUNCTION(exportClass, bool, (const char* pszName))
+		DEFINE_MODULE_FUNCTION(exportClass, bool, (const char* pszName, const std::string& strNameSpace))
 		{
-			r = ScriptExporterManager().ExportClass(pszName, lua) != 0;
+			if(strNameSpace.empty())
+			{
+				r = ScriptExporterManager().ExportClass(pszName, lua) != 0;
+			}
+			else
+			{
+				r = ScriptExporterManager().ExportClass(pszName, lua, strNameSpace.c_str()) != 0;
+			}
 
 			return 1;
 		}
 
-		DEFINE_MODULE_FUNCTION(exportClassTo, bool, (const char* pszName, const char* pszNameSpace))
+		DEFINE_MODULE_FUNCTION(exportModule, bool, (const char* pszName, CScriptTable& tbl))
 		{
-			r = ScriptExporterManager().ExportClass(pszName, lua, pszNameSpace) != 0;
-
-			return 1;
-		}
-
-		DEFINE_MODULE_FUNCTION(exportModule, bool, (const char* pszName))
-		{
-			r = ScriptExporterManager().ExportModule(pszName, lua) != 0;
+			if(!tbl.IsReferd())
+			{
+				r = ScriptExporterManager().ExportModule(pszName, lua) != 0;
+			}
+			else
+			{
+				r = ScriptExporterManager().ExportModuleTo(pszName, lua, tbl) != 0;
+			}
 
 			return 1;
 		}

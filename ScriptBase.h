@@ -610,13 +610,13 @@ namespace __module_ ## modName\
 	{\
 		typedef TRetType< ret >::return_type return_type;\
 		return_type	 r;\
-		lua_State*   lua;\
+		bin::CScriptHandle lua;\
 		int Exec ##  args;\
 	};\
 	static int __mf_lua_ ## name(lua_State* pL)\
 	{\
 		__mf_Impl_##name __mf_impl;\
-		__mf_impl.lua = pL;\
+		__mf_impl.lua.Init(pL);\
 		TLuaFuncCaller<__mf_Impl_##name, ret##args> caller(pL, &__mf_impl);\
 		caller.MakeMArgs();\
 		caller.Call();\

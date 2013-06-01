@@ -47,10 +47,8 @@ namespace bin
 		{
 			printf("exportModule [helloModule] : Done\n");
 			r = 1;								// return value
-			CScriptHandle scriptHandle;			// Use CScriptHandle to access lua machine
-			ASSERT0(scriptHandle.Init(lua));
 			std::string luaStr;
-			ASSERT0(scriptHandle.Get("luaStr", luaStr));
+			ASSERT0(lua.Get("luaStr", luaStr));
 			ASSERT0(luaStr == "luaStr");
 			return 1;
 		}
@@ -1052,6 +1050,22 @@ namespace bin
 
 			return 1;
 		}
+
+		DEFINE_MODULE_FUNCTION(moduleToTable, void, ())
+		{
+			std::cout<< "moduleToTable\n";
+			return 1;
+		}
+
+		DEFINE_MODULE_FUNCTION(returnTable, CScriptTable, ())
+		{
+			lua.NewTable(r);
+
+			r.Set("msg", "returnTable");
+			
+			return 1;
+		}
+
 	END_SCRIPT_MODULE()
 
 	BEGIN_SCRIPT_MODULE(logger)

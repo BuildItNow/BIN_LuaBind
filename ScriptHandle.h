@@ -808,13 +808,15 @@ OPERATION_FAIL:
 #undef MAKE_ARG
 #undef MAKE_RET
 #undef MEM_FUNC_POSWORK
-	protected:
+	
 		lua_State* GetHandle() const
 		{
 			return m_ref.pLua;
 		}
 
 		int PrepareStack();
+
+	protected:
 
 		template <typename T>
 		int PostFmLua(int nFmLuaRet, T)

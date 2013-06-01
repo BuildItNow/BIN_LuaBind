@@ -277,6 +277,9 @@ namespace bin
 		// Internal used
 		int ExportModule(const char* pszName, lua_State* pL);
 
+		// Internal used
+		int ExportModuleTo(const char* pszName, lua_State* pL, CScriptTable& scriptTable);
+
 		int ExportClass(const char* pszName, CScriptHandle& scriptHandle, const char* pszNameSpace = NULL)
 		{
 			if(scriptHandle.IsNull())
@@ -296,6 +299,31 @@ namespace bin
 
 			return ExportModule(pszName, scriptHandle.GetHandle());
 		}
+
+		int ExportModuleTo(const char* pszName, CScriptHandle& scriptHandle, CScriptTable& scriptTable)
+		{
+			if(scriptHandle.IsNull())
+			{
+				return 0;
+			}
+
+			bool bNeedUnref = false;
+			if(!scriptTable.IsReferd())
+			{
+				scriptHandle.NewTable(scriptTable);
+				bNeedUnref = true;
+			}
+
+			int ret = ExportModuleTo(pszName, scriptHandle.GetHandle(), scriptTable);
+
+			if(!ret && bNeedUnref)
+			{
+				scriptTable.UnRef();
+			}
+
+			return ret;
+		}
+
 	private:
 		ScriptExporters			m_scriptExporters;
 	};
@@ -383,6 +411,42 @@ namespace bin
 
 			lua_pushcfunction(pL, &__Imported);
 			lua_setfield(pL, -2, "imported");
+
+			return 1;
+		}
+
+		int ExportTo(lua_State* pL, CScriptTable& scriptTable)
+		{
+			assert(scriptTable.GetHandle() == pL);
+
+			CHECK_LUA_STACK(pL);
+
+			const ModuleFunctionLinkNode* pNode = GetModuleFunctionList();	// Empty module
+			if(!pNode)
+			{
+				return 1;
+			}
+
+			//const int SIZE_HINT = 10;
+			//luaL_pushmodule(pL, GetModuleName(), SIZE_HINT);
+			scriptTable.PrepareStack();	// table
+
+			while(pNode)
+			{
+				lua_pushcfunction(pL, pNode->pFunc);	// table, func
+				lua_setfield(pL, -2, pNode->pszName);	// table
+
+				pNode = pNode->pNxt;
+			}
+
+			//lua_pushstring(pL, GetModuleName());
+			//lua_setfield(pL, -2, "name");
+
+			//lua_pushstring(pL, "module");
+			//lua_setfield(pL, -2, "type");
+
+			//lua_pushcfunction(pL, &__Imported);
+			//lua_setfield(pL, -2, "imported");
 
 			return 1;
 		}
