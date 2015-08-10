@@ -1,25 +1,3 @@
-/*
-Original code by Yang G (pinner@mail.ustc.edu.cn)
-
-This software is provided 'as-is', without any express or implied
-warranty. In no event will the authors be held liable for any
-damages arising from the use of this software.
-
-Permission is granted to anyone to use this software for any
-purpose, including commercial applications, and to alter it and
-redistribute it freely, subject to the following restrictions:
-
-1. The origin of this software must not be misrepresented; you must
-not claim that you wrote the original software. If you use this
-software in a product, an acknowledgment in the product documentation
-would be appreciated but is not required.
-
-2. Altered source versions must be plainly marked as such, and
-must not be misrepresented as being the original software.
-
-3. This notice may not be removed or altered from any source
-distribution.
-*/
 #pragma once
 
 #include "ScriptBase.h"
@@ -180,19 +158,6 @@ namespace bin
 			return 1;
 		}
 
-		//// Internal used, Export a class or module to lua_State
-		//int Export(const char* pszName, lua_State* pL)
-		//{
-		//	ExporterIterator pos = m_scriptExporters.find(pszName);
-
-		//	if(pos != m_scriptExporters.end())
-		//	{
-		//		return pos->second->Export(pL);
-		//	}
-
-		//	return 0;
-		//}
-
 		// Internal used
 		int CheckObjectsTable(lua_State* pL, bool bWeaked)
 		{
@@ -256,20 +221,6 @@ namespace bin
 
 			return 1;
 		}
-
-		////! Export a class,module or function to CScriptHandle 
-		////! \param pszName the name of class, module or function
-		////! \param scriptHandle
-		////! \return 0-fail non_0-succeed
-		//int Export(const char* pszName, CScriptHandle& scriptHandle)
-		//{
-		//	if(scriptHandle.IsNull())
-		//	{
-		//		return 0;
-		//	}
-
-		//	return Export(pszName, scriptHandle.GetHandle());
-		//}
 
 		// Internal used
 		int ExportClass(const char* pszName, lua_State* pL, const char* pszNameSpace = NULL);
@@ -427,8 +378,6 @@ namespace bin
 				return 1;
 			}
 
-			//const int SIZE_HINT = 10;
-			//luaL_pushmodule(pL, GetModuleName(), SIZE_HINT);
 			scriptTable.PrepareStack();	// table
 
 			while(pNode)
@@ -438,15 +387,6 @@ namespace bin
 
 				pNode = pNode->pNxt;
 			}
-
-			//lua_pushstring(pL, GetModuleName());
-			//lua_setfield(pL, -2, "name");
-
-			//lua_pushstring(pL, "module");
-			//lua_setfield(pL, -2, "type");
-
-			//lua_pushcfunction(pL, &__Imported);
-			//lua_setfield(pL, -2, "imported");
 
 			return 1;
 		}

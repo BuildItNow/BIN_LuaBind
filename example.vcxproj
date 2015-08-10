@@ -41,9 +41,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)/bin/inc;$(SolutionDir)/lib/lua/inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)/bin/lib;$(SolutionDir)/lib/lua/lib</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>bin_luabind_d.lib;lua_d.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -52,14 +58,46 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/bin/inc;$(SolutionDir)/lib/lua/inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)/bin/lib;$(SolutionDir)/lib/lua/lib</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <AdditionalDependencies>bin_luabind.lib;lua.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="example\ExampleManager.cpp" />
+    <ClCompile Include="example\Example_Class.cpp" />
+    <ClCompile Include="example\Example_ExporterManager.cpp" />
+    <ClCompile Include="example\Example_Extend.cpp" />
+    <ClCompile Include="example\Example_Handle.cpp" />
+    <ClCompile Include="example\Example_Inheritance.cpp" />
+    <ClCompile Include="example\Example_Init.cpp" />
+    <ClCompile Include="example\Example_Module.cpp" />
+    <ClCompile Include="example\Example_Other.cpp" />
+    <ClCompile Include="example\Example_Table.cpp" />
+    <ClCompile Include="example\Example_UserData.cpp" />
+    <ClCompile Include="example\Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="example\Example.h" />
+    <ClInclude Include="example\ExampleManager.h" />
+    <ClInclude Include="example\Example_Class.h" />
+    <ClInclude Include="example\Example_ExporterManager.h" />
+    <ClInclude Include="example\Example_Extend.h" />
+    <ClInclude Include="example\Example_Handle.h" />
+    <ClInclude Include="example\Example_Inheritance.h" />
+    <ClInclude Include="example\Example_Init.h" />
+    <ClInclude Include="example\Example_Module.h" />
+    <ClInclude Include="example\Example_Other.h" />
+    <ClInclude Include="example\Example_Table.h" />
+    <ClInclude Include="example\Example_UserData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

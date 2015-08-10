@@ -15,6 +15,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test.vcxproj", "{D0
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example", "example.vcxproj", "{2C69DECC-2BBD-4DFF-830F-C35A80C782F1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0305EA54-5BC9-402B-9DC0-C97253BC22F8} = {0305EA54-5BC9-402B-9DC0-C97253BC22F8}
+		{4D63F7C7-EC26-427A-82C1-9E9552E4500B} = {4D63F7C7-EC26-427A-82C1-9E9552E4500B}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DE34FCEC-AEE2-40BF-B7DF-EB94E63880F8}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
