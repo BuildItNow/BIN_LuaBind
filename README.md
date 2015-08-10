@@ -28,8 +28,11 @@ BIN_LuaBind是一个和luabind、tolua++类似的库，提供了简洁的C/C++�
 # 文档
 
 ## Bind机制
-使用BIN_LuaBind，需要先在C/C++层建立需要导出到脚本的模块或者类定义(注意：不是C++类定义，而是使用)，这个过程通过提供的BEGIN_SCRIPT_MODULE,BEGIN_SCRIPT_CLASS进行定义。然后通过Exporter Manager将需要的模块和类导出到Script Handle或者Script Table里面，这个过程通过ScriptExporterManager().Export和ScriptExporterManager().ExportTo完成。<br/>
+使用BIN_LuaBind，需要先在C/C++层建立需要导出到脚本的模块或者类定义(注意：不是C++类定义)，这个过程通过提供的BEGIN_SCRIPT_MODULE,BEGIN_SCRIPT_CLASS进行定义。然后通过Exporter Manager将需要的模块和类导出到Script Handle或者Script Table里面，这个过程通过ScriptExporterManager().Export和ScriptExporterManager().ExportTo完成。<br/>
 采用这种方式，在C/C++层包含了整个定义的结构，可根据需要将不同的模块和类导出到不同的Script Handle和Script Table，避免总是将所有的定义都导出到Lua层。
+
+## C++对象和Lua对象关联机制
+Lua层和C++层的对象采用了中间层进行隔离，因此Lua不会直接依赖C++对象指针，C++也不会直接依赖Lua的Ref，这保证了代码层面的安全性。C++对象销毁后，Lua层不会保留对象野指针；Lua对象回收后，C++层不会调用到未知的对象上去。
 
 ## Module定义
 BEGIN_SCRIPT_MODULE : 开始定义一个Module <br/>
@@ -88,6 +91,23 @@ END_SCRIPT_CLASS()
 ```
 
 ## Class继承定义
+DECLARE_SCRIPT_SUB_CLASS : 声明一个Class作为Sub Script Class <br/>
+SUPER_CLASS : 定义中声明Script Class的Script Super Class <br/>
+
+```C++
+class CSub : public CClass
+{
+	DECLARE_SCRIPT_SUB_CLASS(CClass);
+}
+
+BEGIN_SCRIPT_CLASS(subClassName, CSub)
+	SUPER_CLASS(superClassName, CClass)
+	DEFINE_CLASS_FUNCTION(func, void, ())
+	{
+		return 1;
+	}
+END_SCRIPT_CLASS()
+```
 
 ## C++对象销毁处理
 
