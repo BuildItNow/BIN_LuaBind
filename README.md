@@ -51,39 +51,40 @@ END_SCRIPT_CLASS : 结束定义一个Script Class <br/>
 DEFINE_CLASS_FUNCTION : 定义一个Class Member Function <br/>
 ```C++
 class CClass
+{
+	DECLARE_SCRIPT_CLASS()
+public:
+	CClass()
 	{
-		DECLARE_SCRIPT_CLASS()
-	public:
-		CClass()
+	}
+
+	~CClass()
+	{
+	}
+
+	void Func()
+	{
+	}
+};
+
+BEGIN_SCRIPT_CLASS(className, CClass)
+	DEFINE_CLASS_FUNCTION(functionName, returnType, (argumentList))
+	{
+		return 1;
+	}
+
+	DEFINE_CLASS_FUNCTION(func, void, ())
+	{	
+		if(!obj)
 		{
+			return 0;
 		}
 
-		~CClass()
-		{
-		}
-
-		void Func()
-		{
-		}
-	};
-
-	BEGIN_SCRIPT_CLASS(className, CClass)
-		DEFINE_CLASS_FUNCTION(functionName, returnType, (argumentList))
-		{
-			return 1;
-		}
-		DEFINE_CLASS_FUNCTION(func, void, ())
-		{	
-			if(!obj)
-			{
-				return 0;
-			}
-
-			obj->Func();
+		obj->Func();
 			
-			return 1;
-		}
-	END_SCRIPT_CLASS()
+		return 1;
+	}
+END_SCRIPT_CLASS()
 ```
 
 ## Class继承定义
