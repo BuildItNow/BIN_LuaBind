@@ -402,11 +402,11 @@ OPERATION_FAIL:
 		}
 
 		//! Call a global function named pszName, r is the returned value, a0 is the only argument.
-		//! NB. you must indicate the argument type explicitly like CallFunc<Type>(name, ret, arg)
+		//! NB. you must indicate the argument type explicitly like CallFunc<Type>(name, arg, ret)
 		//! NB. the return type will be interpreted by compiler, there is no need to indicate it's type.
 		//! \return 0-fail.
 		template <typename A0, typename R>
-		int CallFunc(const char* pszName, R& r, ARGUMENT_TYPE(A0) a0)
+		int CallFunc(const char* pszName, ARGUMENT_TYPE(A0) a0, R& r)
 		{
 			FUNC_PREWORK();
 
@@ -425,7 +425,7 @@ OPERATION_FAIL:
 
 		//! Two args version, see One args version.
 		template <typename A0, typename A1, typename R>
-		int CallFunc(const char* pszName, R& r, ARGUMENT_TYPE(A0) a0, ARGUMENT_TYPE(A1) a1)
+		int CallFunc(const char* pszName, ARGUMENT_TYPE(A0) a0, ARGUMENT_TYPE(A1) a1, R& r)
 		{
 			FUNC_PREWORK();
 
@@ -738,7 +738,7 @@ OPERATION_FAIL:
 
 		//! One argument version, See the 0 argument version.
 		template <typename A0, typename R>
-		int CallMemFunc(const char* pszName, R& r, ARGUMENT_TYPE(A0) a0)
+		int CallMemFunc(const char* pszName, ARGUMENT_TYPE(A0) a0, R& r)
 		{
 			MEM_FUNC_PREWORK();
 
@@ -759,7 +759,7 @@ OPERATION_FAIL:
 
 		//! Two arguments version, see 0 argument version.
 		template <typename A0, typename A1, typename R>
-		int CallMemFunc(const char* pszName, R& r, ARGUMENT_TYPE(A0) a0, ARGUMENT_TYPE(A1) a1)
+		int CallMemFunc(const char* pszName, ARGUMENT_TYPE(A0) a0, ARGUMENT_TYPE(A1) a1, R& r)
 		{
 			MEM_FUNC_PREWORK();
 
@@ -886,7 +886,7 @@ OPERATION_FAIL:
 		}
 
 		template <typename A0, typename R>
-		int CallFunc(const char* pszName, R& r, ARGUMENT_TYPE(A0) a0)
+		int CallFunc(const char* pszName, ARGUMENT_TYPE(A0) a0, R& r)
 		{
 			FUNC_PREWORK();
 
@@ -904,7 +904,7 @@ OPERATION_FAIL:
 		}
 
 		template <typename A0, typename A1, typename R>
-		int CallFunc(const char* pszName, R& r, ARGUMENT_TYPE(A0) a0, ARGUMENT_TYPE(A1) a1)
+		int CallFunc(const char* pszName, ARGUMENT_TYPE(A0) a0, ARGUMENT_TYPE(A1) a1, R& r)
 		{
 			FUNC_PREWORK();
 

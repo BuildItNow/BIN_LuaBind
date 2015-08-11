@@ -81,7 +81,7 @@ BEGIN_TEST_CASE(TestScriptHandle)
 	std::cout<< "c.y : "<< c_y<< std::endl;
 	int r = 0;
 	{
-		int nRet = scriptHandle.CallFunc<CScriptTable, CScriptTable>("add", r, c, d);
+		int nRet = scriptHandle.CallFunc<CScriptTable, CScriptTable>("add", c, d, r);
 		ASSERT0(nRet);
 	}
 	std::cout<<"add() : "<< r<< std::endl;
@@ -143,7 +143,7 @@ BEGIN_TEST_CASE(TestScriptHandle)
 			ASSERT0(temp.Get("funcTbl", funcTbl));
 			ASSERT0(funcTbl.IsReferd());
 			int nRet = 0;
-			ASSERT0((funcTbl.CallFunc<int, int>("add", nRet, 100, 200)));
+			ASSERT0((funcTbl.CallFunc<int, int>("add", 100, 200, nRet)));
 			ASSERT0(nRet == 300);
 
 			CScriptTable argTbl0;
@@ -159,7 +159,7 @@ BEGIN_TEST_CASE(TestScriptHandle)
 		
 			CScriptTable retTbl;
 
-			ASSERT0((funcTbl.CallFunc<CScriptTable, CScriptTable>("tblAdd", retTbl, argTbl0, argTbl1)));
+			ASSERT0((funcTbl.CallFunc<CScriptTable, CScriptTable>("tblAdd", argTbl0, argTbl1, retTbl)));
 			ASSERT0(retTbl.Get("x", nRet));
 			ASSERT0(nRet == 30);
 		}
@@ -873,10 +873,10 @@ BEGIN_TEST_CASE(TestInheritance)
             ASSERT0(scriptHandle.Get("obj", obj));
 
             std::string strMsg;
-            ASSERT0(obj.CallMemFunc<std::string>("getScriptMessage", strMsg));
+            ASSERT0(obj.CallMemFunc("getScriptMessage", strMsg));
             ASSERT0(strMsg == "type_scriptSub");
 
-            ASSERT0(obj.CallMemFunc<std::string>("getMsg", strMsg));
+            ASSERT0(obj.CallMemFunc("getMsg", strMsg));
             ASSERT0(strMsg == "CSuper");         
         }
 
@@ -887,13 +887,13 @@ BEGIN_TEST_CASE(TestInheritance)
             ASSERT0(scriptHandle.Get("obj", obj));
 
             std::string strMsg;
-            ASSERT0(obj.CallMemFunc<std::string>("getScriptSubMessage", strMsg));
+            ASSERT0(obj.CallMemFunc("getScriptSubMessage", strMsg));
             ASSERT0(strMsg == "type_scriptSub");
 
-            ASSERT0(obj.CallMemFunc<std::string>("getScriptMessage", strMsg));
+            ASSERT0(obj.CallMemFunc("getScriptMessage", strMsg));
             ASSERT0(strMsg == "type_scriptSubSub");
 
-            ASSERT0(obj.CallMemFunc<std::string>("getMsg", strMsg));
+            ASSERT0(obj.CallMemFunc("getMsg", strMsg));
             ASSERT0(strMsg == "CSuper");
         }
 
@@ -909,10 +909,10 @@ BEGIN_TEST_CASE(TestInheritance)
             ASSERT0(strMsg == "type_scriptSubSub_subsub");
 
             int nRet = 0;
-            ASSERT0(obj.CallMemFunc<int>("subsubFunc", nRet));
+            ASSERT0(obj.CallMemFunc("subsubFunc", nRet));
             ASSERT0(nRet == 100);
 
-            ASSERT0(obj.CallMemFunc<int>("subFunc", nRet));
+            ASSERT0(obj.CallMemFunc("subFunc", nRet));
             ASSERT0(nRet == 2);
         }
     }
