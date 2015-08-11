@@ -88,9 +88,9 @@ BEGIN_SCRIPT_CLASS(super, CSuper)
 	ASSERT0(ScriptExporterManager().ExportClass("subsub", scriptHandle));
 ]]
 
-local type_super = types.super
-local type_sub   = types.sub
-local type_subsub = types.subsub
+local type_super = bin_types.super
+local type_sub   = bin_types.sub
+local type_subsub = bin_types.subsub
 
 local function newType(name, super)
 	local type_new = {}

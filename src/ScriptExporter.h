@@ -216,7 +216,7 @@ namespace bin
 				lua_setfield(pL, LUA_REGISTRYINDEX, SCRIPT_TYPES);
 
 				lua_pushvalue(pL, -1);
-				lua_setglobal(pL, "types");
+				lua_setglobal(pL, "bin_types");
 			}
 
 			return 1;

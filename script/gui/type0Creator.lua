@@ -2,7 +2,7 @@ print("begin gui/type0Creator")
 
 print("type0Creator")
 
-local guiDialog = types.gui.guiDialog
+local guiDialog = bin_types.gui.guiDialog
 
 -- now define the dialog
 local type0Dialog = {}

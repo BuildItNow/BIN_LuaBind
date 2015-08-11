@@ -445,7 +445,7 @@ namespace bin
 			assert(pLua && pFun);
 		}
 
-		int MakeMArgs()
+		int MakeArgs()
 		{
 			return 1;
 		}
@@ -453,6 +453,11 @@ namespace bin
 		int MakeCArgs()
 		{
 			TFmLua<typename F::class_type*>::Make(pLua, 1, pFun->obj);
+			if(!pFun->obj)
+			{
+				return 0;
+			}
+
 			return 1;
 		}
 
@@ -481,7 +486,7 @@ namespace bin
 			assert(pLua && pFun);
 		}
 
-		int MakeMArgs()
+		int MakeArgs()
 		{
 			TFmLua<Arg>::Make(pLua, 1, a);
 			return 1;
@@ -490,6 +495,11 @@ namespace bin
 		int MakeCArgs()
 		{
 			TFmLua<typename F::class_type*>::Make(pLua, 1, pFun->obj);
+			if(!pFun->obj)
+			{
+				return 0;
+			}
+
 			TFmLua<Arg>::Make(pLua, 2, a);
 			return 1;
 		}
@@ -522,7 +532,7 @@ namespace bin
 			assert(pLua && pFun);
 		}
 
-		int MakeMArgs()
+		int MakeArgs()
 		{
 			TFmLua<Arg0>::Make(pLua, 1, a0);
 			TFmLua<Arg1>::Make(pLua, 2, a1);
@@ -533,6 +543,10 @@ namespace bin
 		int MakeCArgs()
 		{
 			TFmLua<typename F::class_type*>::Make(pLua, 1, pFun->obj);
+			if(!pFun->obj)
+			{
+				return 0;
+			}
 			
 			TFmLua<Arg0>::Make(pLua, 2, a0);
 			TFmLua<Arg1>::Make(pLua, 3, a1);
@@ -596,9 +610,10 @@ namespace __module_ ## modName\
 		__mf_Impl_##name __mf_impl;\
 		__mf_impl.lua.Init(pL);\
 		TLuaFuncCaller<__mf_Impl_##name, ret##args> caller(pL, &__mf_impl);\
-		caller.MakeMArgs();\
-		caller.Call();\
-		caller.MakeRet();\
+		if(!caller.MakeArgs() || !caller.Call() || !caller.MakeRet())\
+		{\
+			return 0;\
+		}\
 		return 1;\
 	}\
 	static __mf_LinkNode __mf_node_ ## name(#name, &__mf_lua_ ## name);\
@@ -659,12 +674,34 @@ namespace __class_ ## clsName\
 	};\
 	static int __cf_lua_ ## name(lua_State* pL)\
 	{\
-	__cf_Impl_##name __cf_impl;\
-	TLuaFuncCaller<__cf_Impl_##name, ret##args> caller(pL, &__cf_impl);\
-	caller.MakeCArgs();\
-	caller.Call();\
-	caller.MakeRet();\
-	return 1;\
+		__cf_Impl_##name __cf_impl;\
+		TLuaFuncCaller<__cf_Impl_##name, ret##args> caller(pL, &__cf_impl);\
+		if(!caller.MakeCArgs() || !caller.Call() || !caller.MakeRet())\
+		{\
+			return 0;\
+		}\
+		return 1;\
+	}\
+    static __cf_LinkNode __cf_node_ ## name(#name, &__cf_lua_ ## name);\
+	int __cf_Impl_##name::Exec ## args
+
+#define DEFINE_STATIC_FUNCTION(name, ret, args)\
+	struct __cf_Impl_##name\
+	{\
+	typedef TRetType< ret >::return_type return_type;\
+	typedef __class::class_type			 class_type;\
+	return_type	 r;\
+	int Exec ## args;\
+	};\
+	static int __cf_lua_ ## name(lua_State* pL)\
+	{\
+		__cf_Impl_##name __cf_impl;\
+		TLuaFuncCaller<__cf_Impl_##name, ret##args> caller(pL, &__cf_impl);\
+		if(!caller.MakeArgs() || !caller.Call() || !caller.MakeRet())\
+		{\
+			return 0;\
+		}\
+		return 1;\
 	}\
     static __cf_LinkNode __cf_node_ ## name(#name, &__cf_lua_ ## name);\
 	int __cf_Impl_##name::Exec ## args

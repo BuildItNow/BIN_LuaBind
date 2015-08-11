@@ -214,6 +214,12 @@ namespace bin
 		{
 		}
 
+		CClassTest(const std::string& field)
+			: m_strField(field)
+		{
+
+		}
+
 		~CClassTest()
 		{
 		}
@@ -246,6 +252,11 @@ namespace bin
 			ASSERT0(scrInt == 10);
 		}
 
+		const std::string& GetField()
+		{
+			return m_strField;
+		}
+
 	public:
 		std::string		m_strField;
 	};
@@ -253,12 +264,6 @@ namespace bin
 	BEGIN_SCRIPT_CLASS(exportTestClass, CClassTest)
 		DEFINE_CLASS_FUNCTION(readTable, std::string, (CScriptTable& tbl))
 		{
-			if(!obj)
-			{
-				std::cout<< "readTable() : obj is null\n";
-				return 0;
-			}
-
 			std::cout<< "readTable() is called\n";
 			obj->ReadTable(tbl);
 			r = obj->m_strField;
@@ -266,11 +271,6 @@ namespace bin
 		}
 		DEFINE_CLASS_FUNCTION(returnTable, CScriptTable, ())
 		{	
-			if(!obj)
-			{
-				return 0;
-			}
-
 			std::cout<< "returnTable() is called\n";
 
 			obj->GetScriptHandle().NewTable(r);
@@ -282,11 +282,6 @@ namespace bin
 
 		DEFINE_CLASS_FUNCTION(opUserdata, bool, ())
 		{	
-			if(!obj)
-			{
-				return 0;
-			}
-
 			std::cout<< "opUserdata() is called\n";
 
 			obj->OperOnUserData();
@@ -298,12 +293,21 @@ namespace bin
 
 		DEFINE_CLASS_FUNCTION(retVoid, void, ())
 		{	
-			if(!obj)
-			{
-				return 0;
-			}
+			std::cout<< "retVoid() is called\n";
 
-            std::cout<< "retVoid() is called\n";
+			return 1;
+		}
+
+		DEFINE_CLASS_FUNCTION(getField, std::string, ())
+		{
+			r = obj->GetField();
+			return 1;
+		}
+
+		DEFINE_STATIC_FUNCTION(newInstance, CClassTest*, ())
+		{
+			r = new CClassTest("Hello");
+			r->GetScriptObject().SetDelByScr(true);
 
 			return 1;
 		}
@@ -327,6 +331,25 @@ BEGIN_TEST_CASE(TestExportClass)
 	
 	CScriptUserData obj;
 	CClassTest      obj2;
+
+	// Test Static Function
+	{
+		CScriptHandle   scriptHandle;
+		ASSERT0(scriptHandle.Init());
+
+		ASSERT0(ScriptExporterManager().ExportClass("exportTestClass", scriptHandle));
+
+		ASSERT0(scriptHandle.ExecString("obj = bin_types.exportTestClass.newInstance()"));
+
+		CScriptUserData obj;
+		scriptHandle.Get("obj", obj);
+
+		std::string field;
+		obj.CallMemFunc("getField", field);
+
+		ASSERT0(field == "Hello");
+	}
+
 	{
 		CScriptHandle   scriptHandle;
 		ASSERT0(scriptHandle.Init());
@@ -666,11 +689,6 @@ namespace bin
 	BEGIN_SCRIPT_CLASS(super, CSuper)
 		DEFINE_CLASS_FUNCTION(getMsg, std::string, ())
 		{
-			if(!obj)
-			{
-				return 0;
-			}
-
 			r = obj->m_strSupMsg;
 
 			return 1;
@@ -678,12 +696,7 @@ namespace bin
 
 		DEFINE_CLASS_FUNCTION(superFunc, int, ())
 		{
-			if(!obj)
-			{
-				return 0;
-			}
-
-            r = 1;
+			r = 1;
 
 			std::cout<< "super::superFunc\n";
 
@@ -695,11 +708,6 @@ namespace bin
 		SUPER_CLASS(super, CSuper)
 		DEFINE_CLASS_FUNCTION(getMsg, std::string, ())
 		{
-			if(!obj)
-			{
-				return 0;
-			}
-
 			r = obj->m_strSubMsg;
 			std::cout<< "sub::getMsg\n";
 
@@ -708,12 +716,7 @@ namespace bin
 		
 		DEFINE_CLASS_FUNCTION(subFunc, int, ())
 		{
-			if(!obj)
-			{
-				return 0;
-			}
-
-            r = 2;
+			r = 2;
 
 			std::cout<< "sub::subFunc\n";
 
@@ -725,11 +728,6 @@ namespace bin
 		SUPER_CLASS(sub, CSub)
 		DEFINE_CLASS_FUNCTION(getMsg, std::string, ())
 		{
-			if(!obj)
-			{
-				return 0;
-			}
-
 			r = obj->m_strSubSubMsg;
 			std::cout<< "subsub::getMsg\n";
 
@@ -738,11 +736,6 @@ namespace bin
 
 		DEFINE_CLASS_FUNCTION(subsubFunc, int, ())
 		{
-			if(!obj)
-			{
-				return 0;
-			}
-
 			r = 100;
 
 			std::cout<< "subsub::subsubFunc\n";
@@ -966,12 +959,6 @@ namespace bin
 	BEGIN_SCRIPT_CLASS(guiDialog, CGuiDialog)
 		DEFINE_CLASS_FUNCTION(getID, int, ())
 		{
-			r = -1;
-			if(!obj)
-			{
-				return 0;
-			}
-
 			r = obj->GetID();
 
 			return 1;
@@ -979,11 +966,6 @@ namespace bin
 
 		DEFINE_CLASS_FUNCTION(onCreate, void, ())
 		{
-			if(!obj)
-			{
-				return 0;
-			}
-
 			std::cout<< "guiDialog::onCreate\n";
 
 			return 1;
