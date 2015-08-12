@@ -73,10 +73,8 @@ void CExample_Module::Do()
 	bin::CScriptHandle luaHandle;
 	luaHandle.Init();
 
-	// Export test module definition to luaHandle
 	bin::ScriptExporterManager().ExportModule("testModule", luaHandle);
 
-	// Call module functions
 	luaHandle.ExecString("testModule.func0()");
 	luaHandle.ExecString("print(testModule.func1())"); 
 	luaHandle.ExecString("print(testModule.func2())");

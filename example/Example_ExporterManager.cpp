@@ -14,10 +14,8 @@ void CExample_ExporterManager::Do()
 	bin::CScriptHandle luaHandle;
 	luaHandle.Init();
 
-	// Export test module definition to luaHandle
 	bin::ScriptExporterManager().ExportModule("test", luaHandle);
 
-	// call test.hello();
 	luaHandle.ExecString("print(test.hello())");
 }
 

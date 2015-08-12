@@ -61,11 +61,13 @@ void CExample_Class::Do()
 	bin::CScriptHandle luaHandle;
 	luaHandle.Init();
 
-	// Export test module definition to luaHandle
 	bin::ScriptExporterManager().ExportClass("TestClass", luaHandle);
 
-	// call test.hello();
-	luaHandle.ExecString("local obj = bin_types.TestClass.newInstance(); obj:hello(); obj:say('Hello BIN_LuaBind'); print(' Obj wants '..obj:want())");
+	luaHandle.ExecString(	"local obj = bin_types.TestClass.newInstance();\n"
+							"obj:hello();\n"
+							"obj:say('Hello BIN_LuaBind');\n"
+							"print(' Obj wants '..obj:want())"
+						);
 }
 
 REGISTE_EXAMPLE(CExample_Class);

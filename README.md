@@ -46,12 +46,12 @@ BEGIN_SCRIPT_MODULE(moduleName)
 	}
 END_SCRIPT_MODULE()
 ```
-
 ## Class定义
 DECLARE_SCRIPT_CLASS : 声明一个C++ Class为Script Class <br/>
 BEGIN_SCRIPT_CLASS : 开始定义一个Script Class <br/>
 END_SCRIPT_CLASS : 结束定义一个Script Class <br/>
 DEFINE_CLASS_FUNCTION : 定义一个Class Member Function <br/>
+DEFINE_STATIC_FUNCTION : 定义一个Class Static Function <br/>
 ```C++
 class CClass
 {
@@ -78,18 +78,19 @@ BEGIN_SCRIPT_CLASS(className, CClass)
 
 	DEFINE_CLASS_FUNCTION(func, void, ())
 	{	
-		if(!obj)
-		{
-			return 0;
-		}
-
 		obj->Func();
 			
 		return 1;
 	}
+
+	DEFINE_STATIC_FUNCTION(newInstance, CClass*, ())
+	{		
+		r = new CClass();
+
+		return 1;
+	}
 END_SCRIPT_CLASS()
 ```
-
 ## Class继承定义
 DECLARE_SCRIPT_SUB_CLASS : 声明一个Class作为Sub Script Class <br/>
 SUPER_CLASS : 定义中声明Script Class的Script Super Class <br/>
@@ -108,11 +109,11 @@ BEGIN_SCRIPT_CLASS(subClassName, CSub)
 	}
 END_SCRIPT_CLASS()
 ```
-
-## C++对象销毁处理
-
-## Lua对象回收处理
-
+## C++对象生命期管理
+对于导出到Lua的C++对象，生命期有两种管理方式:<br/>
+* Lua拥有 SCRIPT_OWN_OBJECTS : 生命由Lua管理，当lua对象被回收时，C++对象被销毁 <br/> 
+* Lua使用 SCRIPT_USE_OBJECTS : 生命由C++管理，Lua层充当使用者 <br/>
+SCRIPT_OWN_OBJECTS对应的userdata被放到weak表里面，SCRIPT_USE_OBJECTS的userdata被放到strong表里面；无论哪种方式，只要C++层销毁了对象，lua层引用的C++对象为空，可通过obj:imported()来检查一个对象是否是导出的(C++对象没有被销毁)
 
 
 
