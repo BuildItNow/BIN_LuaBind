@@ -38,7 +38,6 @@ void CExample_Handle::Do()
 {
 	// Init a lua handle
 	bin::CScriptHandle luaHandle;
-	
 
 	//
 	// init
@@ -105,10 +104,70 @@ void CExample_Handle::Do()
 	// set
 	//	bool, int, double, string, const char*
 	//	table, userdata, script object
+
+	{
+		luaHandle.Release();
+		luaHandle.Init();
+
+		bool a = false;
+		int  b = 2015;
+		double c = 3.1415926;
+		std::string d = "Hello string";
+		const char* e = "Hello char*";
+
+		luaHandle.Set("a", a);
+		luaHandle.Set("b", b);
+		luaHandle.Set("c", c);
+		luaHandle.Set("d", d);
+		luaHandle.Set("e", e);
+
+		luaHandle.ExecString("print(a, b, c, d, e)");
+
+		bin::CScriptTable tbl;
+		luaHandle.NewTable("tbl", tbl);
+		tbl.Set("a", a);
+		tbl.Set("b", b);
+		tbl.Set("c", c);
+		tbl.Set("d", d);
+		tbl.Set("e", e);
+		
+		luaHandle.ExecString("print('table value : ', tbl.a, tbl.b, tbl.c, tbl.d, tbl.e)");
+
+		bin::ScriptExporterManager().ExportClass("HandleTestClass", luaHandle);
+		CTestClass obj;
+		luaHandle.Set("obj", &obj);
+
+		luaHandle.ExecString("print('object : ', obj:name()) obj.v = 'lua string'");
+
+		bin::CScriptUserData ud;
+		obj.GetScriptUserData(ud);
+
+		ud.Set("v0", "c++ string");
+
+		luaHandle.Set("obj2", ud);
+
+		luaHandle.ExecString("print('object2 : ', obj2.v, obj2.v0)");
+	}
+
 	// call function
 	// 
+	{
+		luaHandle.ExecString("function hello() print('luaFunction : ', 'Hello World') end");
+		luaHandle.CallFunc("hello", RET_VOID);
+
+		luaHandle.ExecString("function hello(a, b) print('luaFunction(a, b): ', a, b) end");
+		luaHandle.CallFunc<const char*, int>("hello", "Hello", 100, RET_VOID);
+
+		luaHandle.ExecString("function hello(a, b) print('luaFunction(a, b) ret : ', a, b) return 'World' end");
+		std::string ret;
+		luaHandle.CallFunc<const char*, int>("hello", "Hello", 100, ret);
+		printf("Lua Return : %s\n", ret.c_str());
+	}
 
 	// release
+	{
+		luaHandle.Release();
+	}
 }
 
 REGISTE_EXAMPLE(CExample_Handle);

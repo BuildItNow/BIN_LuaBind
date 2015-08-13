@@ -1034,8 +1034,6 @@ BEGIN_TEST_CASE(TestApplication)
 	CScriptHandle scriptHandle;
 	ASSERT0(scriptHandle.Init());
 
-	ASSERT0(ScriptExporterManager().ExportModule("exporterManager", scriptHandle));
-
 	ASSERT0(scriptHandle.Exec("script/initialize.lua"));
 
 END_TEST_CASE()

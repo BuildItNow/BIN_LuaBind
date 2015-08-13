@@ -251,6 +251,22 @@ namespace bin
 			return ExportModule(pszName, scriptHandle.GetHandle());
 		}
 
+		int ExportModuleTo(const char* pszName, CScriptHandle& scriptHandle, const char* pszTableName)
+		{
+			// Get the table
+			CScriptTable scriptTable;
+			scriptHandle.Get(pszTableName, scriptTable);
+			
+			bool bNewed = !scriptTable.IsReferd();
+			int ret = ExportModuleTo(pszName, scriptHandle, scriptTable);
+			if(ret && bNewed)	// The table is a new table ?
+			{
+				scriptHandle.Set(pszTableName, scriptTable);
+			}
+
+			return ret;
+		}
+
 		int ExportModuleTo(const char* pszName, CScriptHandle& scriptHandle, CScriptTable& scriptTable)
 		{
 			if(scriptHandle.IsNull())

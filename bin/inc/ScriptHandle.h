@@ -89,53 +89,7 @@ namespace bin
 		}
 		
 		//! Initialize a CScriptHandle, NB. This CScriptHandle must be released state
-		int Init()
-		{
-			assert(!m_pLua);
-			
-			m_pLua = luaL_newstate();
-			
-			if(!m_pLua)
-			{
-				goto OPERATION_FAIL;
-			}
-
-			m_bOwn = true;
-
-			{
-				lua_State* L = m_pLua;
-
-				const luaL_Reg loadedlibs[] = 
-				{
-					{"_G",				luaopen_base},
-					{LUA_LOADLIBNAME,	luaopen_package},
-					{LUA_COLIBNAME,		luaopen_coroutine},
-					{LUA_TABLIBNAME,	luaopen_table},
-					{LUA_IOLIBNAME,		luaopen_io},
-					{LUA_OSLIBNAME,		luaopen_os},
-					{LUA_STRLIBNAME,	luaopen_string},
-					{LUA_MATHLIBNAME,	luaopen_math},
-#if defined _DEBUG
-					{LUA_DBLIBNAME,		luaopen_debug},
-#endif
-					{NULL, NULL}
-				};
-
-				const luaL_Reg* pos = loadedlibs;
-				for(; pos->name; ++pos) 
-				{
-					luaL_requiref(L, pos->name, pos->func, 1);
-					lua_pop(L, 1);
-				}
-			}			
-			
-			return 1;
-OPERATION_FAIL:
-			
-			Release();
-
-			return 0;
-		}
+		int Init();
 
 		//! Initialize a CScriptHandle from file.
 		int Init(const char* pszFileName)
